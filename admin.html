@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>管理画面｜日本酒試飲会</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script>
+      // ★ GASの /exec URL（必要に応じて差し替え）
+      window.GAS_API_URL =
+        'https://script.google.com/macros/s/AKfycbyAEtKmtpdXL-Z5fzl4TuTHmWYv5K9AFQQgfleRwwbZZdc94L0LMtOlj1ujEK9JbcCwig/exec';
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1>管理画面</h1>
+        <p class="lead">ランキング・ビジュアル投票結果の確認と投票受付の切替</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- 投票受付 -->
+      <section class="card">
+        <div class="card-head">
+          <h2>投票受付</h2>
+          <div class="head-actions">
+            <button id="toggleBtn" class="btn">読込中...</button>
+          </div>
+        </div>
+        <p id="adminMsg" class="msg"></p>
+        <p class="meta">現在値: <strong id="voteOpenLabel">-</strong></p>
+      </section>
+
+      <!-- 平均点ランキング -->
+      <section class="card">
+        <div class="card-head">
+          <h2>ランキング（平均点）</h2>
+          <button id="refreshStatsBtn" class="btn">更新</button>
+        </div>
+        <ol id="rankList" class="ranking"></ol>
+        <p id="rankMeta" class="meta"></p>
+      </section>
+
+      <!-- ビジュアル投票 -->
+      <section class="card">
+        <div class="card-head">
+          <h2>ビジュアル投票結果（得票数）</h2>
+          <button id="refreshVisualBtn" class="btn">更新</button>
+        </div>
+        <ol id="visualList" class="ranking"></ol>
+        <p id="visualMeta" class="meta"></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container"><small>© 日本酒試飲会</small></div>
+    </footer>
+
+    <script src="./admin.js" defer></script>
+  </body>
+</html>

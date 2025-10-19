@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <base href="../" />
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>管理画面｜日本酒試飲会</title>
+    <link rel="stylesheet" href="/css/styles.css?v=20251018" />
+    <script>
+      // ★ GASのWeb App URL（index.html と同一のものを推奨）
+      window.GAS_API_URL =
+        'https://script.google.com/macros/s/AKfycbzXW0OSGOR-j0zm4kg8FeioYvlKzLDGr4r6aM0LauIaIUo6bHgyGinyqok0OBxYVdfWmA/exec';
+    </script>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1>管理画面</h1>
+        <p class="lead">投票状況の確認と設定変更を行います。</p>
+      </div>
+    </header>
+
+    <main class="container" id="adminMain">
+      <!-- ログイン -->
+      <section class="card" id="loginSection" aria-labelledby="login-heading">
+        <h2 id="login-heading">管理者ログイン</h2>
+        <div class="field">
+          <label for="adminName">管理者名</label>
+          <select id="adminName" required>
+            <option value="" disabled selected>選択してください</option>
+          </select>
+        </div>
+        <button id="loginBtn" class="btn primary" type="button">
+          ログイン
+        </button>
+        <p id="loginMsg" class="msg" aria-live="polite"></p>
+      </section>
+
+      <!-- 管理パネル -->
+      <section
+        class="card hidden"
+        id="adminPanel"
+        aria-labelledby="admin-heading"
+      >
+        <div class="card-head">
+          <h2 id="admin-heading">管理メニュー</h2>
+        </div>
+
+        <div class="settings">
+          <h3>投票制御</h3>
+          <div class="toggle-row">
+            <label>
+              <input type="checkbox" id="toggleSakeVote" />
+              酒投票（星評価）を許可する
+            </label>
+          </div>
+          <div class="toggle-row">
+            <label>
+              <input type="checkbox" id="toggleVisualVote" />
+              ビジュアル投票（画像選択）を許可する
+            </label>
+          </div>
+          <div class="actions" style="margin-top: 8px">
+            <button id="saveSettingsBtn" class="btn" type="button">
+              設定を保存
+            </button>
+            <button id="refreshRankingBtn" class="btn ghost" type="button">
+              ランキング更新
+            </button>
+          </div>
+          <p id="saveMsg" class="msg" aria-live="polite"></p>
+        </div>
+
+        <hr />
+
+        <!-- ランキング -->
+        <section class="ranking-section" aria-labelledby="ranking-heading">
+          <div class="card-head">
+            <h3 id="ranking-heading">ビジュアル投票ランキング</h3>
+          </div>
+          <ol
+            id="visualRanking"
+            class="ranking ranking-admin"
+            aria-live="polite"
+            aria-busy="true"
+          ></ol>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container"><small>© 日本酒試飲会 管理ツール</small></div>
+    </footer>
+
+    <script src="/js/admin.js" defer></script>
+  </body>
+</html>
