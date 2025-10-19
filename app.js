@@ -1,30 +1,28 @@
 // ============================
-// 要素参照（HTML内のidから必要なDOMを取得）
+// 要素参照
 // ============================
-const nicknameEl = document.getElementById('nickname'); // 参加者セレクト（上）
-const listEl = document.getElementById('sake-list'); // 銘柄カードを差し込むコンテナ
-const sendBtn = document.getElementById('sendBtn'); // 送信ボタン
-const clearBtn = document.getElementById('clearBtn'); // 全リセットボタン
-const refreshBtn = document.getElementById('refreshBtn'); // ランキング「更新」ボタン
-const msgEl = document.getElementById('msg'); // 状態メッセージ（成功/失敗など）
-const rankingEl = document.getElementById('ranking'); // トップ3の簡易ランキング
-const metaEl = document.getElementById('meta'); // ランキングの更新時刻など
+const nicknameEl = document.getElementById('nickname');
+const listEl = document.getElementById('sake-list');
+const sendBtn = document.getElementById('sendBtn');
+const clearBtn = document.getElementById('clearBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const msgEl = document.getElementById('msg');
+const rankingEl = document.getElementById('ranking');
+const metaEl = document.getElementById('meta');
 
 // ============================
-// 状態（アプリの現在の値を保持）
+// 状態
 // ============================
-let SAKE_DATA = []; // 銘柄マスタ（GASから取得）
-const currentScores = {}; // ユーザーが入力した星評価：key: s{idx} -> number(0〜10)
-let eventsBound = false; // 二重でイベント登録されるのを防ぐフラグ
-const FETCH_TIMEOUT = 12000; // 通信のタイムアウト(ms) 長過ぎる待機を避ける
-let visualSelectedIndex = null; // 画像（ビジュアル）投票の単一選択インデックス
-let VOTE_OPEN = true; // 投票受付状態（GASのsettingsで上書き）
+let SAKE_DATA = []; // 銘柄マスタ
+const currentScores = {}; // key: s{idx} -> number
+let eventsBound = false; // 二重イベント防止
+const FETCH_TIMEOUT = 12000; // 固定タイムアウト（ms）
+let visualSelectedIndex = null; // ビジュアル投票の単一選択
+let VOTE_OPEN = true; // 受付状態（settingsで上書き）
 
 // ============================
-// ユーティリティ（汎用関数）
+// ユーティリティ
 // ============================
-
-/** 文字列のHTMLエスケープ（XSS対策：安全に表示するため） */
 const esc = (s) =>
   String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -32,14 +30,9 @@ const esc = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-/**
- * fetchなどの非同期処理にタイムアウトを付ける
- * @param {(signal: AbortSignal) => Promise<any>} promise 実行関数（signalを受け取る）
- * @param {number} ms タイムアウト時間（ミリ秒）
- */
 function withTimeout(promise, ms = FETCH_TIMEOUT) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms); // 規定時間で中断（Abort）
+  const t = setTimeout(() => ctrl.abort(), ms);
   return Promise.race([
     promise(ctrl.signal),
     new Promise((_, rej) =>
@@ -48,28 +41,17 @@ function withTimeout(promise, ms = FETCH_TIMEOUT) {
   ]).finally(() => clearTimeout(t));
 }
 
-/**
- * 読み込み中表示（aria-busy）をON/OFF
- * スクリーンリーダーにも「処理中」を伝えられる
- */
 function setBusy(el, busy) {
   if (!el) return;
   el.setAttribute('aria-busy', busy ? 'true' : 'false');
 }
 
-// ============================
-// 設定の取得とUI反映
-// ============================
-
-/**
- * GASのsettingsから受付状態を取得し、UIに反映
- * 失敗時は「受付中扱い」にするポリシー（必要に応じて変更可）
- */
+// 設定の取得とUI反映（取得失敗時のポリシー：受付中扱い）
 async function loadVoteStatusAndApply() {
   try {
     const d = await withTimeout(async (signal) => {
       const r = await fetch(`${window.GAS_API_URL}?type=settings`, {
-        cache: 'no-store', // 常に最新を取りに行く
+        cache: 'no-store',
         signal,
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -81,12 +63,11 @@ async function loadVoteStatusAndApply() {
         .toUpperCase() === 'TRUE';
   } catch (e) {
     console.warn('settings load failed', e);
-    VOTE_OPEN = true; // ← オフライン時などは受付中とみなす（運用方針に合わせて変更OK）
+    VOTE_OPEN = true; // 必要なら false に変更可
   }
   applyVoteOpenUI();
 }
 
-/** 受付状態に応じて送信ボタンやメッセージを切り替え */
 function applyVoteOpenUI() {
   if (!VOTE_OPEN) {
     msgEl.textContent =
@@ -94,7 +75,7 @@ function applyVoteOpenUI() {
     sendBtn.disabled = true;
     sendBtn.setAttribute('aria-busy', 'false');
   } else {
-    // 受付中に戻ったら締切メッセージを消す（他のメッセージは残す）
+    // 受付中に戻ったら、締切りメッセージだけ消す
     if (msgEl.textContent.includes('締め切られています')) {
       msgEl.textContent = '';
     }
@@ -103,21 +84,18 @@ function applyVoteOpenUI() {
 }
 
 // ============================
-// データ取得（GASから必要データを取ってくる）
+// データ取得
 // ============================
-
-/** 銘柄マスタを取得して SAKE_DATA に格納 */
 async function fetchSakeMaster() {
   return withTimeout(async (signal) => {
     const res = await fetch(`${window.GAS_API_URL}?type=sakes`, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json(); // 期待形：{ ok, items }
+    const data = await res.json(); // { ok, items }
     if (!data.ok) throw new Error(data.error || 'failed to load sakes');
     SAKE_DATA = Array.isArray(data.items) ? data.items : [];
   });
 }
 
-/** 参加者のセレクトを埋める（members_full：idと表示名を取得） */
 async function populateMembers() {
   const sel = nicknameEl;
   return withTimeout(async (signal) => {
@@ -125,16 +103,13 @@ async function populateMembers() {
       signal,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json(); // 期待形：{ ok, items:[{id,name}] }
-
-    // いったん初期化して先頭にプレースホルダを追加
+    const data = await res.json(); // { ok, items:[{id,name}] }
     sel.innerHTML = '';
     sel.appendChild(new Option('選択してください', '', true, false));
-
     if (data.ok && Array.isArray(data.items)) {
       data.items.forEach(({ id, name }) => {
-        const opt = new Option(name, id); // 値はmemberId
-        opt.dataset.name = name; // 表示名も保持（後で送信に使う）
+        const opt = new Option(name, id); // 値=memberId
+        opt.dataset.name = name; // 表示名も保持
         sel.appendChild(opt);
       });
     } else {
@@ -143,7 +118,6 @@ async function populateMembers() {
   });
 }
 
-/** 集計（平均点ランキング）を取得して表示 */
 async function fetchStats() {
   setBusy(rankingEl, true);
   try {
@@ -153,7 +127,7 @@ async function fetchStats() {
         signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json(); // 期待形：{ items, updatedAt }
+      return res.json(); // { items, updatedAt }
     });
     renderRanking(data);
   } catch (e) {
@@ -166,15 +140,8 @@ async function fetchStats() {
 }
 
 // ============================
-// 描画（UIを生成して画面に差し込む）
+// 描画
 // ============================
-
-/**
- * 銘柄リスト（カード）＋ 星評価UI を描画
- * - 画像クリック：ビジュアル投票の単一選択
- * - 星10個：クリック/キー操作で0〜10を切替
- * - クリアボタン：その銘柄の入力を0に戻す
- */
 function renderInputs() {
   listEl.innerHTML = '';
   setBusy(listEl, true);
@@ -182,13 +149,12 @@ function renderInputs() {
   const frag = document.createDocumentFragment();
 
   (SAKE_DATA || []).forEach((it, idx) => {
-    const key = `s${idx}`; // 星評価のキー（currentScores のプロパティ名）
+    const key = `s${idx}`;
 
     const wrap = document.createElement('div');
     wrap.className = 'item';
-    wrap.dataset.index = String(idx); // 視覚選択（ビジュアル投票）用にindexを持たせる
+    wrap.dataset.index = String(idx);
 
-    // 銘柄カードのHTML（descは省略表示にして「続きを読む」で展開）
     wrap.innerHTML = `
       <img class="thumb"
            src="${esc(it.img || '')}"
@@ -237,7 +203,7 @@ function renderInputs() {
       </div>
     `;
 
-    // 星10個を生成（role="radio"でアクセシブルに）
+    // 星10個
     const starsBox = wrap.querySelector('.stars');
     for (let v = 1; v <= 10; v++) {
       const span = document.createElement('span');
@@ -251,11 +217,10 @@ function renderInputs() {
       starsBox.appendChild(span);
     }
 
-    // 画像クリックでビジュアル投票（単一選択トグル）
+    // 画像クリックでビジュアル選択（単一）
     const img = wrap.querySelector('.thumb');
     img.addEventListener('click', () => {
       const memberId = (nicknameEl.value || '').trim();
-      // 出品者は自銘柄へのビジュアル投票不可
       if (
         memberId &&
         String(SAKE_DATA[idx].exhibitorMemberId || '') === memberId
@@ -263,7 +228,6 @@ function renderInputs() {
         msgEl.textContent = '出品者はビジュアル投票できません。';
         return;
       }
-      // 同じカードを再クリックで選択解除
       visualSelectedIndex = visualSelectedIndex === idx ? null : idx;
       updateVisualSelectionUI();
       updateSendButtonState();
@@ -272,25 +236,23 @@ function renderInputs() {
     frag.appendChild(wrap);
   });
 
-  // 挿入＆初期化
   listEl.appendChild(frag);
   currentScoresReset();
   setBusy(listEl, false);
 
-  // リスト内イベントは最初の1回だけ登録
   if (!eventsBound) {
-    listEl.addEventListener('click', onStarsClick); // 星クリック
-    listEl.addEventListener('keydown', onStarsKeydown); // 星キーボード操作
-    listEl.addEventListener('click', onClearMini); // 個別クリア
-    listEl.addEventListener('click', onMoreToggle); // 読む/閉じる
+    listEl.addEventListener('click', onStarsClick);
+    listEl.addEventListener('keydown', onStarsKeydown);
+    listEl.addEventListener('click', onClearMini);
+    listEl.addEventListener('click', onMoreToggle);
     eventsBound = true;
   }
 
-  applySelfVoteDisable(); // 出品者の自己投票無効化（星/画像）
-  updateVisualSelectionUI(); // 視覚的な選択枠の反映
+  applySelfVoteDisable(); // 自己銘柄の星UI無効化
+  updateVisualSelectionUI();
 }
 
-/** ビジュアル投票の選択見た目（簡易：インラインスタイルで枠を付ける） */
+// 選択見た目（inline styleで最小実装）
 function updateVisualSelectionUI() {
   listEl.querySelectorAll('.item').forEach((item) => {
     const idx = Number(item.dataset.index || -1);
@@ -300,7 +262,6 @@ function updateVisualSelectionUI() {
   });
 }
 
-/** 簡易ランキング（上位3件）を描画 */
 function renderRanking({ items = [], updatedAt = '' } = {}) {
   rankingEl.innerHTML = '';
 
@@ -332,10 +293,320 @@ function renderRanking({ items = [], updatedAt = '' } = {}) {
     : '';
 }
 
-/** ビジュアル投票が選択されているか？ */
 function hasVisualVote() {
   return visualSelectedIndex !== null;
 }
 
 // ============================
-// イベントハンドラ群（UI操作時の
+// イベントハンドラ
+// ============================
+function onMoreToggle(e) {
+  const btn = e.target.closest('[data-more]');
+  if (!btn) return;
+  const key = btn.dataset.more;
+  const p = listEl.querySelector(`[data-desc="${key}"]`);
+  if (!p) return;
+
+  const isClamped = p.classList.contains('clamp');
+  p.classList.toggle('clamp', !isClamped);
+  btn.textContent = isClamped ? '閉じる' : '続きを読む';
+}
+
+function currentScoresReset() {
+  (SAKE_DATA || []).forEach((_, idx) => (currentScores[`s${idx}`] = 0));
+  updateAllStarsUI();
+  updateSendButtonState();
+}
+
+function onClearMini(e) {
+  const btn = e.target.closest('[data-clear]');
+  if (!btn) return;
+  const key = btn.dataset.clear;
+  currentScores[key] = 0;
+  updateStarsUI(key);
+  updateSendButtonState();
+  msgEl.textContent = '入力をリセットしました。';
+}
+
+function onStarsClick(e) {
+  const star = e.target.closest('.star');
+  if (!star) return;
+  const key = star.dataset.key;
+  const value = Number(star.dataset.value);
+  currentScores[key] = currentScores[key] === value ? 0 : value; // 同値で0に
+  updateStarsUI(key);
+  updateSendButtonState();
+}
+
+function onStarsKeydown(e) {
+  const star = e.target.closest('.star');
+  if (!star) return;
+  const key = star.dataset.key;
+  let v = currentScores[key];
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+    v = Math.min(10, v + 1);
+    e.preventDefault();
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+    v = Math.max(0, v - 1);
+    e.preventDefault();
+  }
+  currentScores[key] = v;
+  updateStarsUI(key);
+  updateSendButtonState();
+}
+
+function updateAllStarsUI() {
+  (SAKE_DATA || []).forEach((_, idx) => updateStarsUI(`s${idx}`));
+}
+
+function updateStarsUI(key) {
+  const v = currentScores[key] || 0;
+  const row = listEl.querySelector(`[data-row="${key}"]`);
+  if (!row) return;
+  row.querySelectorAll('.star').forEach((el) => {
+    const val = Number(el.dataset.value);
+    const checked = val === v && v > 0;
+    el.classList.toggle('active', val <= v && v > 0);
+    el.setAttribute('aria-checked', String(checked));
+  });
+}
+
+function hasAnyScore() {
+  return Object.values(currentScores).some((v) => v > 0);
+}
+
+function updateSendButtonState() {
+  const nickname = (nicknameEl.value || '').trim();
+  const canSendCore = Boolean(nickname) && (hasAnyScore() || hasVisualVote());
+  sendBtn.disabled = !VOTE_OPEN || !canSendCore; // 締切なら常に無効
+}
+
+// ============================
+// 送信
+// ============================
+async function handleSend() {
+  // 直前に受付状態を再確認（サーバ優先）
+  try {
+    const d = await withTimeout(async (signal) => {
+      const r = await fetch(`${window.GAS_API_URL}?type=settings`, {
+        cache: 'no-store',
+        signal,
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+    const open =
+      String(d?.settings?.voteOpen ?? 'TRUE')
+        .trim()
+        .toUpperCase() === 'TRUE';
+    if (!open) {
+      msgEl.textContent =
+        '現在、投票受付は締め切られています。受付期間外のため送信できません。';
+      sendBtn.disabled = true;
+      return;
+    }
+  } catch (err) {
+    console.error('設定の取得に失敗しました:', err);
+    // 取得に失敗した場合はサーバ側の検証に委ねて続行
+  }
+
+  // 入力バリデーション（採点 or ビジュアル）
+  const memberId = (nicknameEl.value || '').trim();
+  const nickname = nicknameEl.selectedOptions[0]?.dataset?.name || '';
+  if (!memberId) {
+    msgEl.textContent = '参加者を選択してください。';
+    nicknameEl.focus();
+    return;
+  }
+  if (!hasAnyScore() && !hasVisualVote()) {
+    msgEl.textContent = '採点またはビジュアル投票を行ってください。';
+    return;
+  }
+
+  // ペイロード作成
+  const scores = {};
+  for (const [k, v] of Object.entries(currentScores)) {
+    if (v > 0) scores[k] = v;
+  }
+  const payload = { nickname, memberId, scores };
+  if (hasVisualVote()) {
+    payload.visual = { sakeIndex: visualSelectedIndex };
+  }
+
+  // 送信
+  sendBtn.disabled = true;
+  sendBtn.setAttribute('aria-busy', 'true');
+  msgEl.textContent = '送信中...';
+
+  try {
+    const form = new URLSearchParams();
+    form.append('payload', JSON.stringify(payload));
+
+    const { ok, status, json, text } = await withTimeout(async (signal) => {
+      const res = await fetch(window.GAS_API_URL, {
+        method: 'POST',
+        body: form,
+        signal,
+      });
+      const t = await res.text();
+      let j;
+      try {
+        j = JSON.parse(t);
+      } catch {}
+      return { ok: res.ok, status: res.status, json: j, text: t };
+    });
+
+    if (ok && json?.ok) {
+      msgEl.textContent = '送信しました。最新の集計を反映します。';
+      await fetchStats();
+      // 成功後の後片付け
+      visualSelectedIndex = null;
+      updateVisualSelectionUI();
+      currentScoresReset();
+    } else {
+      const err = String(json?.error || text || '').toLowerCase();
+      if (err.includes('voting closed')) {
+        msgEl.textContent =
+          '現在、投票受付は締め切られています。受付期間外のため送信できません。';
+        sendBtn.disabled = true;
+      } else if (err.includes('nickname required')) {
+        msgEl.textContent = '参加者を選択してください。';
+      } else if (err.includes('sheet not found')) {
+        msgEl.textContent =
+          'スプレッドシートが見つかりません。管理者に連絡してください。';
+      } else {
+        msgEl.textContent = `送信に失敗しました（${status}）：${
+          json?.error ?? text ?? ''
+        }`;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    msgEl.textContent =
+      '通信エラーが発生しました。ネットワークをご確認ください。';
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.setAttribute('aria-busy', 'false');
+    updateSendButtonState(); // 受付状態と入力状況を再計算
+  }
+}
+
+// ============================
+// 参加者セレクト連動
+// ============================
+const nicknameConfirmEl = document.getElementById('nicknameConfirm');
+const selectedNameEl = document.getElementById('selectedName');
+
+function syncNicknameSelects() {
+  // 上部のセレクト内容を下部にコピー
+  nicknameConfirmEl.innerHTML = nicknameEl.innerHTML;
+
+  // 双方向の連動
+  nicknameEl.addEventListener('change', () => {
+    const id = nicknameEl.value;
+    const name = nicknameEl.selectedOptions[0]?.dataset?.name || '';
+    if (nicknameConfirmEl) nicknameConfirmEl.value = id;
+    if (selectedNameEl) selectedNameEl.textContent = name || '未選択';
+    updateSendButtonState();
+    applySelfVoteDisable();
+  });
+
+  nicknameConfirmEl?.addEventListener('change', () => {
+    const id = nicknameConfirmEl.value;
+    const opt = Array.from(nicknameEl.options).find((o) => o.value === id);
+    nicknameEl.value = id;
+    const name = opt?.dataset?.name || '';
+    if (selectedNameEl) selectedNameEl.textContent = name || '未選択';
+    updateSendButtonState();
+    applySelfVoteDisable();
+  });
+}
+
+function applySelfVoteDisable() {
+  const memberId = (nicknameEl.value || '').trim();
+  // いったん全解除
+  listEl.querySelectorAll('.item').forEach((item) => {
+    item.style.opacity = '';
+    item.style.pointerEvents = '';
+    item
+      .querySelectorAll('.star')
+      .forEach((s) => s.setAttribute('aria-disabled', 'false'));
+    item.removeAttribute('data-self-disabled');
+    const img = item.querySelector('.thumb');
+    if (img) img.style.pointerEvents = ''; // 画像クリックも戻す
+  });
+
+  if (!memberId) return;
+
+  (SAKE_DATA || []).forEach((it, idx) => {
+    if (String(it.exhibitorMemberId || '') === memberId) {
+      const key = `s${idx}`;
+      const row = listEl.querySelector(`[data-row="${key}"]`);
+      const card = row?.closest('.item');
+      if (!card) return;
+
+      card.style.opacity = '0.6';
+      row.style.pointerEvents = 'none';
+      card.setAttribute('data-self-disabled', 'true');
+      row
+        .querySelectorAll('.star')
+        .forEach((s) => s.setAttribute('aria-disabled', 'true'));
+
+      // 画像クリックも不可
+      const img = card.querySelector('.thumb');
+      if (img) img.style.pointerEvents = 'none';
+
+      // 既に選択していたら解除
+      if (visualSelectedIndex === idx) {
+        visualSelectedIndex = null;
+        updateVisualSelectionUI();
+      }
+
+      currentScores[key] = 0;
+      updateStarsUI(key);
+      card
+        .querySelector('.desc')
+        ?.setAttribute('title', '出品者は自己投票できません');
+    }
+  });
+
+  updateSendButtonState();
+}
+
+// ============================
+// 起動
+// ============================
+function bindTopLevelEvents() {
+  nicknameEl.addEventListener('change', updateSendButtonState);
+  sendBtn.addEventListener('click', handleSend);
+  clearBtn.addEventListener('click', () => {
+    currentScoresReset();
+    msgEl.textContent = '全ての評価をリセットしました。';
+  });
+  refreshBtn.addEventListener('click', fetchStats);
+}
+
+async function init() {
+  setBusy(listEl, true);
+  setBusy(rankingEl, true);
+
+  try {
+    await Promise.all([fetchSakeMaster(), populateMembers(), fetchStats()]);
+    syncNicknameSelects();
+    renderInputs();
+    bindTopLevelEvents();
+    await loadVoteStatusAndApply(); // 受付状態を取得してUI反映
+    // 受付中のときのみ初期メッセージを消す（締切り表示は残す）
+    if (VOTE_OPEN) msgEl.textContent = '';
+  } catch (e) {
+    console.error(e);
+    msgEl.textContent =
+      '銘柄データの読み込みに失敗しました。リロードしてください。';
+  } finally {
+    setBusy(listEl, false);
+    setBusy(rankingEl, false);
+  }
+}
+
+init();
