@@ -2,32 +2,57 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <!--
+      viewport はスマホ対応の基本設定。
+      width=device-width  … 端末幅に合わせる
+      initial-scale=1     … 初期ズーム倍率
+      viewport-fit=cover  … iPhoneのノッチ周りまで表示
+    -->
     <meta
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
+    <!-- PWAやモバイルブラウザのアドレスバー色などで使われることがある -->
     <meta name="theme-color" content="#ffffff" />
+
+    <!-- ブラウザのタブ名に表示されるタイトル -->
     <title>
       第９回みんなで決めよう！ホントに美味しいお酒はこれだ！全国大会
     </title>
+
+    <!-- 検索結果の説明やSNSのスニペットに使われる可能性がある -->
     <meta
       name="description"
       content="参加者ごとに日本酒を0〜10点で採点し、平均点ランキングを表示する投票ページ"
     />
+
+    <!-- 画面の見た目（色やレイアウト）をまとめたCSSファイル -->
     <link rel="stylesheet" href="./styles.css" />
 
     <script>
-      // ★ GASの /exec URL（必要に応じて差し替え）
+      // ===========================
+      // ① バックエンド（GAS）のURL設定
+      // ===========================
+      // ここに Google Apps Script の WebアプリURL（/exec）を入れて前後分離。
+      // app.js から window.GAS_API_URL を参照して通信します。
+      // 環境が変わったらここだけ差し替えればOK。
       window.GAS_API_URL =
         'https://script.google.com/macros/s/AKfycbyAEtKmtpdXL-Z5fzl4TuTHmWYv5K9AFQQgfleRwwbZZdc94L0LMtOlj1ujEK9JbcCwig/exec';
     </script>
   </head>
 
   <body>
-    <noscript
-      >このページを利用するにはJavaScriptを有効にしてください。</noscript
-    >
+    <!--
+      JavaScript がオフの人向けの案内。
+      JS必須のアプリでは丁寧に理由を伝えるのが親切。
+    -->
+    <noscript>
+      このページを利用するにはJavaScriptを有効にしてください。
+    </noscript>
 
+    <!-- ===========================
+         ② ページ上部（タイトルと説明）
+       =========================== -->
     <header class="site-header">
       <div class="container">
         <h1>第９回みんなで決めよう！ホントに美味しいお酒はこれだ！全国大会</h1>
@@ -39,22 +64,46 @@
       </div>
     </header>
 
+    <!--
+      main はページの主内容を囲うセマンティックタグ。
+      id="main" はスクリプトで参照したい時のためのフック。
+    -->
     <main class="container" id="main">
-      <!-- 参加者情報 -->
+      <!-- =========================================
+           ③ 参加者の選択（最初に誰が投票するか決める）
+           - <section> は意味のあるまとまり
+           - aria-labelledby で見出しと関連付けてアクセシビリティ向上
+         ========================================= -->
       <section class="card" aria-labelledby="section-participant">
         <h2 id="section-participant">参加者情報</h2>
+
+        <!-- .field は1つの入力とそのラベルをまとめるための汎用ラッパー -->
         <div class="field">
+          <!-- for="nickname" と id="nickname" を対応させるとラベルクリックで選択が開く -->
           <label for="nickname">参加者（必須）</label>
+
+          <!--
+            required  … 未選択だと送信ボタンを無効にする等のバリデーションに利用
+            aria-describedby … ヘルプテキスト（説明文）と関連付け
+          -->
           <select id="nickname" required aria-describedby="nicknameHelp">
+            <!-- 初回ロード中のプレースホルダー。JSで置き換え -->
             <option value="" disabled selected hidden>読み込み中...</option>
           </select>
+          <!-- 説明文（必要なら表示用の小さなテキストを置く） -->
+          <!-- <small id="nicknameHelp" class="help">姓と名の順で表示されます</small> -->
         </div>
       </section>
 
-      <!-- 採点エリア -->
+      <!-- =========================================
+           ④ 採点エリア（星で0〜10点をつける）
+           - 「全リセット」や「投票する」ボタンもここ
+         ========================================= -->
       <section class="card" aria-labelledby="section-score">
         <div class="card-head">
           <h2 id="section-score">採点（★0〜10）</h2>
+
+          <!-- すべての採点を初期化するボタン。type="button" でフォーム送信されないようにする -->
           <div class="head-actions">
             <button
               id="clearBtn"
@@ -67,6 +116,11 @@
           </div>
         </div>
 
+        <!--
+          実際の銘柄カード（星評価UI）は JS でここへ差し込む（動的生成）。
+          aria-live="polite" … 画面リーダー向けに「静かに更新された」ことを伝える
+          aria-busy="true"   … 読み込み中フラグ（JSで完了時に false に）
+        -->
         <div
           id="sake-list"
           class="grid"
@@ -74,6 +128,10 @@
           aria-busy="true"
         ></div>
 
+        <!--
+          送信ボタンとメッセージ行。
+          disabled は参加者未選択や未入力時に活用（JSで切り替え）
+        -->
         <div class="actions">
           <button
             id="sendBtn"
@@ -84,15 +142,32 @@
           >
             投票する
           </button>
-          <!-- ← メッセージはこの1つだけ（重複IDを解消） -->
+
+          <!--
+            状態メッセージ（例：送信成功/失敗、バリデーション警告）。
+            role="status" ＋ aria-live でスクリーンリーダーにも伝える。
+            ※ 同じIDの重複は不具合の元。ここでは1つだけ配置。
+          -->
           <span id="msg" class="msg" aria-live="polite" role="status"></span>
         </div>
       </section>
 
-      <!-- 参加者セレクト（上部と連動） -->
-      <!-- ※カード枠が不要なら sectionではなくdivでもOK。枠を出したくない場合は div にしてください。 -->
+      <!-- =========================================
+           ⑤ 参加者セレクト（確認用）
+           - 上部と同じ値で同期（JSで連動）
+           - 見た目上の確認やミス防止に役立つ
+         ========================================= -->
+      <!--
+        ※ カード枠が不要なら <div> に変えてもOK。
+        今回は統一感のために section + .card のままにしています。
+      -->
       <section class="card" aria-labelledby="section-participant-confirm">
+        <!--
+          .sr-only は「画面では非表示だけど、スクリーンリーダーには読ませたい」時のクラス想定。
+          視覚デザインを邪魔せず、構造的には見出しを持たせられる。
+        -->
         <h2 id="section-participant-confirm" class="sr-only">参加者確認</h2>
+
         <div class="field">
           <label for="nicknameConfirm">参加者（確認用）</label>
           <select id="nicknameConfirm" aria-describedby="nicknameConfirmHelp">
@@ -112,31 +187,57 @@
         </div>
       </section>
 
-      <!-- ランキング（CSSで非表示にするならそのまま残してOK） -->
+      <!-- =========================================
+           ⑥ ランキング表示（平均点）
+           - hidden 属性で最初は非表示
+           - JSでデータ取得後に表示切り替え可能
+         ========================================= -->
       <section class="card" aria-labelledby="section-ranking" hidden>
         <div class="card-head">
           <h2 id="section-ranking">現在のランキング（平均点）</h2>
+
+          <!-- 最新のランキングを取得し直すボタン -->
           <button id="refreshBtn" class="btn" type="button" aria-busy="false">
             更新する
           </button>
         </div>
+
+        <!--
+          <ol> は順序付きリスト。1位,2位…の並びに向いている。
+          aria-live/aria-busy は採点エリアと同様。
+        -->
         <ol
           id="ranking"
           class="ranking"
           aria-live="polite"
           aria-busy="true"
         ></ol>
+
+        <!-- データの更新時刻や件数などのメタ情報を表示する領域 -->
         <p id="meta" class="meta"></p>
       </section>
     </main>
 
+    <!-- ===========================
+         ⑦ フッター（著作権など）
+       =========================== -->
     <footer class="site-footer">
       <div class="container">
         <small>© 日本酒試飲会</small>
       </div>
     </footer>
 
-    <!-- deferでDOM構築後に実行／blockingを避ける -->
+    <!--
+      ⑧ スクリプト読み込み
+      defer を付けることで「HTMLの解析が終わってから」実行される。
+      これにより描画ブロック（表示の遅延）を避けられる。
+      app.js では
+        - GASからのデータ取得（参加者・銘柄・設定）
+        - 星評価UIの生成とイベント処理
+        - バリデーション＆送信
+        - ランキングの取得・表示
+      などを実装する想定。
+    -->
     <script src="./app.js" defer></script>
   </body>
 </html>

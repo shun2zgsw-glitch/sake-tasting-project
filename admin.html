@@ -2,16 +2,35 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <!--
+      viewport設定：スマホでも見やすく表示するための基本。
+      width=device-width … 端末の幅に合わせて表示
+      initial-scale=1    … 初期倍率を1倍に固定
+    -->
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <!-- ブラウザのタブに表示されるタイトル -->
     <title>管理画面｜日本酒試飲会</title>
+
+    <!-- CSS（デザイン設定ファイル）を読み込む -->
     <link rel="stylesheet" href="./styles.css" />
+
     <script>
-      // ★ GASの /exec URL（必要に応じて差し替え）
+      // ============================
+      // ① GASとの通信設定
+      // ============================
+      // Google Apps Script の WebアプリURL。
+      // 投票データやランキングを取得・更新するために利用。
+      // 環境が変わったらこのURLを差し替えるだけでOK。
       window.GAS_API_URL =
         'https://script.google.com/macros/s/AKfycbyAEtKmtpdXL-Z5fzl4TuTHmWYv5K9AFQQgfleRwwbZZdc94L0LMtOlj1ujEK9JbcCwig/exec';
     </script>
   </head>
+
   <body>
+    <!-- ============================
+         ② ページヘッダー部分（タイトルと説明）
+       ============================ -->
     <header class="site-header">
       <div class="container">
         <h1>管理画面</h1>
@@ -19,44 +38,91 @@
       </div>
     </header>
 
+    <!-- ============================
+         ③ ページ本体（メインコンテンツ）
+       ============================ -->
     <main class="container">
-      <!-- 投票受付 -->
+      <!-- =========================================
+           投票受付のON/OFFを切り替えるエリア
+           ※「受付中／締切中」をGASから読み込み、
+             ボタンで状態を変更できるようにする想定。
+         ========================================= -->
       <section class="card">
         <div class="card-head">
           <h2>投票受付</h2>
+
+          <!-- ボタン：受付中⇔締切中を切り替える -->
           <div class="head-actions">
             <button id="toggleBtn" class="btn">読込中...</button>
           </div>
         </div>
+
+        <!-- システムメッセージや操作結果を表示する領域 -->
         <p id="adminMsg" class="msg"></p>
+
+        <!-- 現在の状態をテキストで表示 -->
         <p class="meta">現在値: <strong id="voteOpenLabel">-</strong></p>
       </section>
 
-      <!-- 平均点ランキング -->
+      <!-- =========================================
+           平均点ランキング表示エリア
+           ※「info.html」側で集計された投票結果を
+             GASから取得して表示する。
+         ========================================= -->
       <section class="card">
         <div class="card-head">
           <h2>ランキング（平均点）</h2>
+
+          <!-- 最新データを再取得するボタン -->
           <button id="refreshStatsBtn" class="btn">更新</button>
         </div>
+
+        <!-- ランキング一覧を番号付きリスト（<ol>）で表示 -->
         <ol id="rankList" class="ranking"></ol>
+
+        <!-- 集計日時や件数などのメタ情報 -->
         <p id="rankMeta" class="meta"></p>
       </section>
 
-      <!-- ビジュアル投票 -->
+      <!-- =========================================
+           ビジュアル投票結果エリア
+           ※写真・デザイン投票など別カテゴリの得票数表示用
+         ========================================= -->
       <section class="card">
         <div class="card-head">
           <h2>ビジュアル投票結果（得票数）</h2>
+
+          <!-- 最新の得票数を再取得するボタン -->
           <button id="refreshVisualBtn" class="btn">更新</button>
         </div>
+
+        <!-- 銘柄ごとの得票数を表示 -->
         <ol id="visualList" class="ranking"></ol>
+
+        <!-- 更新日時や補足情報 -->
         <p id="visualMeta" class="meta"></p>
       </section>
     </main>
 
+    <!-- ============================
+         ④ フッター（コピーライト）
+       ============================ -->
     <footer class="site-footer">
-      <div class="container"><small>© 日本酒試飲会</small></div>
+      <div class="container">
+        <small>© 日本酒試飲会</small>
+      </div>
     </footer>
 
+    <!--
+      ============================
+      ⑤ スクリプトの読み込み
+      ============================
+      defer属性によりHTMLの解析完了後に実行される。
+      admin.jsでは主に以下の処理を担当：
+        - GASから投票設定を取得・更新
+        - ランキング情報の取得・描画
+        - 各ボタンのイベントハンドリング
+    -->
     <script src="./admin.js" defer></script>
   </body>
 </html>
