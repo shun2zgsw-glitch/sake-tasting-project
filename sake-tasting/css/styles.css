@@ -1,0 +1,396 @@
+/* ========================================
+   🌈 カラーテーマ & 基本変数（全体のトーン）
+======================================== */
+:root {
+  --bg: #f6f7fb;
+  --card: #fff;
+  --text: #222;
+  --muted: #6b7280;
+  --primary: #1a73e8;
+  --primary-ghost: #e8f0fe;
+  --border: #e5e7eb;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --radius: 14px;
+}
+
+/* ========================================
+   🧱 リセット & ベース（全ページ共通の素地）
+======================================== */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+input,
+button,
+select {
+  font-size: 16px;
+} /* モバイルでのズーム抑止 */
+
+/* ========================================
+   🧭 レイアウト（コンテナ幅・基本余白）
+======================================== */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ========================================
+   🏷️ ヘッダー/フッター（ページ共通）
+======================================== */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.site-header h1 {
+  margin: 0;
+  padding: 20px 0 4px;
+  font-size: 1.6rem;
+}
+.lead {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: #fff;
+  margin-top: 24px;
+}
+.site-footer .container {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ========================================
+   📦 カード（枠レイアウト/影/見出し）
+======================================== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin: 16px 0;
+}
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  margin-bottom: 8px;
+}
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ========================================
+   🧩 入力（フォームの素地）
+======================================== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+}
+.help {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ========================================
+   🔘 ボタン/メッセージ（共通UI部品）
+======================================== */
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #111;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.btn:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.btn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.btn.ghost {
+  background: #f8fafc;
+}
+.btn.small {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.msg {
+  min-height: 1.4em;
+  color: var(--primary);
+}
+.msg.error {
+  color: #b91c1c;
+}
+
+/* 送信ボタンのbusyインジケータ */
+#sendBtn[aria-busy='true'] {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.85;
+}
+#sendBtn[aria-busy='true']::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   🍶 採点（星評価UI：index.html × app.js）
+======================================== */
+.grid {
+  /* 銘柄のカード/行のグリッド配置 */
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.sake-card {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+.sake-card.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.sake-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.stars {
+  /* 星ボタンの配置 */
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.star {
+  /* 星の見た目/操作感 */
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  color: #ccc;
+  transition: transform 0.05s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.star.active {
+  transform: scale(1.15);
+  color: #facc15;
+}
+.star:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* ========================================
+   🖼️ ビジュアル投票（画像クリック：app.js）
+======================================== */
+.visual-vote h2 {
+  margin-top: 0;
+}
+.bottle-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+.bottle-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  background: #fff;
+}
+.bottle-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+.bottle-card p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+.bottle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.bottle-card.selected {
+  outline: 2px solid var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+.visual-vote.disabled .bottle-card {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.bottle-card.disabled {
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ========================================
+   📊 ランキング（index.html / admin.html 双方）
+======================================== */
+.ranking {
+  padding-left: 1.25rem;
+  margin: 10px 0;
+}
+.ranking li {
+  margin: 6px 0;
+}
+
+/* 管理画面用のランキング（サムネ付き） */
+.ranking-admin {
+  list-style: none;
+  padding-left: 0;
+}
+.ranking-admin li {
+  display: grid;
+  grid-template-columns: 64px 56px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-bottom: 1px solid #eef2f7;
+}
+.ranking-admin li:last-child {
+  border-bottom: none;
+}
+.ranking-admin .rank {
+  display: inline-flex;
+  width: 48px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #111827;
+  font-weight: 600;
+}
+.ranking-admin .thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.ranking-admin .label {
+  font-weight: 600;
+}
+.ranking-admin .count {
+  color: #475569;
+}
+
+/* ========================================
+   🛠️ 管理パネル（app.js が index に挿入）
+======================================== */
+.admin-panel {
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+}
+.admin-panel .toggles {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-panel .muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* 共通ユーティリティ */
+.hidden {
+  display: none !important;
+}
+.em {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ========================================
+   📱 レスポンシブ（最小限の縮小調整）
+======================================== */
+@media (max-width: 520px) {
+  .card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  .bottle-card img {
+    height: 120px;
+  }
+}
