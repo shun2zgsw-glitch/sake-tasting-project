@@ -129,15 +129,11 @@ async function toggleVoteOpen() {
     // 環境に合わせてエンドポイント名を調整
     const d = await withTimeout(async (signal) => {
       const r = await fetch(`${window.GAS_API_URL}?type=toggle_open`, {
-        method: 'POST',
         signal,
+        cache: 'no-store',
       });
-      const t = await r.text();
-      try {
-        return JSON.parse(t);
-      } catch {
-        return { ok: false, error: t };
-      }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
     });
     if (d?.ok) {
       adminMsg.textContent = '受付状態を更新しました。';
