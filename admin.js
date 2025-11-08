@@ -219,7 +219,7 @@ function renderRankList(items) {
     }</small>
       </div>
       <div class="rank-score">
-        <span class="avg">${Number(it.avg ?? 0).toFixed(2)}</span>
+         <span class="avg">${Math.round(Number(it.avg ?? 0))}</span>
         <small class="count">（${Number(it.count ?? 0)} 票）</small>
       </div>
     `;
