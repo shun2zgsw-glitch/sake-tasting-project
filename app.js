@@ -183,7 +183,11 @@ function renderInputs() {
           }
         </div>
 
-        <p class="desc clamp" data-desc="${key}">${esc(it.desc || '')}</p>
+        <p class="desc clamp" data-desc="${key}">
+            ${it.blur? `<span class="clear">${esc(it.desc || '').slice(0, 20)}</span><span class="blurred">${esc(it.desc || '').slice(20)}</span>`
+            : esc(it.desc || '')
+            }
+        </p>
         <button class="more-btn" type="button" data-more="${key}">続きを読む</button>
 
         <div class="star-row" data-row="${key}">

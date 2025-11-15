@@ -243,6 +243,29 @@ a.pill.link:hover {
 }
 
 /* ========================================
+   ✨ 説明文ぼかし（blurredクラス用）
+======================================== */
+
+.clear {
+    color: var(--muted);
+}
+
+.blurred {
+    color: transparent; /* 文字を透明に */
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.5); /* ぼかし影 */
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    /* オプション: ホバーでぼかし解除 */
+    /*
+    blurred:hover {
+        color: var(--muted);
+        text-shadow: none;
+    }
+    */
+
+/* ========================================
    ⭐ 星評価
 ======================================== */
 .star-row {
