@@ -711,3 +711,95 @@ a.pill.link:hover {
 .list-toggle:hover {
   background: #f9fafb;
 }
+
+
+/* =======================================================
+📘 manual.html 専用スタイル（既存テーマと統一）
+======================================================= */
+
+/* 共通レイアウト */
+.page-main {
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* マニュアル用のカード表示 */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+    .card h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        color: var(--text);
+    }
+
+    .card h3 {
+        margin-top: 1em;
+        font-size: 1rem;
+        color: var(--text);
+    }
+
+    .card p,
+    .card li {
+        line-height: 1.6;
+        color: var(--text);
+    }
+
+/* 投票画面に戻るボタン */
+.primary-btn {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    padding: 14px 0;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    border-radius: var(--radius);
+    text-decoration: none;
+    margin-top: 12px;
+}
+
+/* ヘッダー */
+.site-header {
+    padding: 16px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+    .site-header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+.subtitle {
+    margin: 6px 0 14px;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+/* info.html に戻るリンク */
+.back-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* 上部・下部に置く “はじめての方はこちら” リンク */
+.help-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--primary);
+    text-decoration: none;
+}
