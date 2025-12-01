@@ -151,13 +151,29 @@ function renderInputs() {
   (SAKE_DATA || []).forEach((it, idx) => {
     const key = `s${idx}`;
 
+    const rawImg = it.img || '';
+    let imgSrc = rawImg;
+
+    if (rawImg) {
+      if (/^https?:\/\//.test(rawImg)) {
+        // http / https ならそのまま
+        imgSrc = rawImg;
+      } else if (rawImg.startsWith('/')) {
+        // すでに /images/... みたいなルート相対ならそのまま
+        imgSrc = rawImg;
+      } else {
+        // images/xxx.jpg など相対パスの場合は、vote/ から見たパスにする
+        imgSrc = '../' + rawImg.replace(/^\/+/, '');
+      }
+    }
+
     const wrap = document.createElement('div');
     wrap.className = 'item';
     wrap.dataset.index = String(idx);
 
     wrap.innerHTML = `
       <img class="thumb"
-           src="${esc(it.img || '')}"
+           src="${esc(imgSrc)}"
            alt="${esc(it.name || '')}"
            loading="lazy"
            decoding="async">
@@ -184,8 +200,15 @@ function renderInputs() {
         </div>
 
         <p class="desc clamp" data-desc="${key}">
-            ${it.blur? `<span class="clear">${esc(it.desc || '').slice(0, 20)}</span><span class="blurred">${esc(it.desc || '').slice(20)}</span>`
-            : esc(it.desc || '')
+            ${
+              it.blur
+                ? `<span class="clear">${esc(it.desc || '').slice(
+                    0,
+                    20
+                  )}</span><span class="blurred">${esc(it.desc || '').slice(
+                    20
+                  )}</span>`
+                : esc(it.desc || '')
             }
         </p>
         <button class="more-btn" type="button" data-more="${key}">続きを読む</button>

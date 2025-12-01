@@ -1,0 +1,161 @@
+/* ========================================
+   🔥 ランキング Top3 強調表示（管理画面）
+======================================== */
+
+/* ベースを上書き：番号リストをカード風に */
+.ranking {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ranking .rank-item {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius, 14px);
+  box-shadow: var(--shadow, 0 2px 12px rgba(0, 0, 0, 0.06));
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+/* 左の順位バッジ（メダル） */
+.rank-badge {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  background: #f3f4f6;
+}
+
+/* 銘柄名・補助情報 */
+.rank-name {
+  font-weight: 700;
+  line-height: 1.2;
+}
+.rank-sub {
+  display: block;
+  color: var(--muted, #6b7280);
+  font-size: 0.9rem;
+}
+
+/* 右側のスコア */
+.rank-score {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rank-score .avg {
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+.rank-score .count {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--muted, #6b7280);
+}
+
+/* 🥇🥈🥉 Top3 装飾 */
+.rank-item.top1 {
+  border-color: #f59e0b;
+  background: linear-gradient(180deg, #fff7e6, #fff);
+  position: relative;
+  animation: glow 2.2s ease-in-out infinite;
+}
+.rank-item.top2 {
+  border-color: #9ca3af;
+  background: linear-gradient(180deg, #f7f7f7, #fff);
+}
+.rank-item.top3 {
+  border-color: #c084fc;
+  background: linear-gradient(180deg, #faf5ff, #fff);
+}
+
+/* メダル色 */
+.top1 .rank-badge {
+  background: #ffd166;
+}
+.top2 .rank-badge {
+  background: #e5e7eb;
+}
+.top3 .rank-badge {
+  background: #eddcfb;
+}
+
+/* 1位クラウン */
+.top1 .rank-crown {
+  position: absolute;
+  top: -10px;
+  left: 22px;
+  font-size: 1.4rem;
+}
+
+/* さりげない発光アニメ */
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+  }
+}
+
+/* サムネ画像 */
+.rank-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--border, #e5e7eb);
+  display: none;
+}
+.rank-item.has-thumb {
+  grid-template-columns: 3.5rem 52px 1fr auto;
+}
+
+/* 銘柄名を1行フル表示（省略なし） */
+.ranking .rank-item {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) 64px;
+}
+.rank-name-wrap {
+  min-width: 0;
+}
+.rank-score {
+  justify-self: end;
+  white-space: nowrap;
+}
+.rank-name {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  display: block;
+  max-width: 100%;
+}
+
+/* 折りたたみ用 */
+.is-hidden {
+  display: none !important;
+}
+.list-toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.list-toggle {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+.list-toggle:hover {
+  background: #f9fafb;
+}

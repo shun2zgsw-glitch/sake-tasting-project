@@ -1,0 +1,269 @@
+/* ========================================
+   🗂️ グリッド（銘柄）
+======================================== */
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ========================================
+   🖼️ 銘柄カード
+======================================== */
+.item {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.grid,
+.item {
+  min-width: 0;
+}
+.item > * {
+  min-width: 0;
+}
+
+/* 画像 */
+.item .thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 5;
+  object-fit: cover;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.item .thumb:hover {
+  transform: scale(1.03);
+}
+
+/* タイトル・メタ */
+.item h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+.pill {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+a.pill.link {
+  text-decoration: none;
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+a.pill.link:hover {
+  background: #dbeafe;
+  text-decoration: underline;
+}
+
+/* ========================================
+   📝 説明文
+======================================== */
+.desc {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: pre-line;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
+}
+.more-btn {
+  appearance: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: block;
+  margin: 8px auto 10px;
+}
+
+/* ========================================
+   ✨ 説明文ぼかし
+======================================== */
+.clear {
+  color: var(--muted);
+}
+.blurred {
+  color: transparent;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* ========================================
+   ⭐ 星評価
+======================================== */
+.star-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  row-gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  max-width: 100%;
+  overflow: hidden;
+}
+.stars {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.star {
+  display: block;
+  width: 1em;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: #ccc;
+  transition: transform 0.05s ease, color 0.2s ease, opacity 0.2s ease;
+  text-align: center;
+}
+.star.active {
+  color: #facc15;
+  opacity: 1;
+}
+.star[aria-checked='true'] {
+  color: #facc15;
+  opacity: 1;
+  filter: drop-shadow(0 0 0.5px currentColor);
+}
+.star:hover {
+  transform: scale(1.1);
+  color: #fde047;
+}
+
+/* 目盛（1・5・10） */
+.scale-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0 4px;
+  width: 100%;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.scale-labels .label-min {
+  justify-self: start;
+}
+.scale-labels .label-mid {
+  justify-self: center;
+}
+.scale-labels .label-max {
+  justify-self: end;
+}
+
+/* 下段・左寄せのクリアボタン */
+.clear-wrap {
+  margin-top: 8px;
+}
+.clear-mini {
+  margin: 0;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #333;
+  border-radius: 999px;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ========================================
+   📱 投票画面のレスポンシブ
+======================================== */
+@media (max-width: 560px) {
+  .star-row {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+  .scale-labels {
+    justify-items: end;
+  }
+}
+
+@media (max-width: 480px) {
+  .item {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+  .item .thumb {
+    width: 100%;
+    height: auto;
+    max-height: 240px;
+    object-fit: contain;
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+  }
+  .more-btn {
+    display: block;
+    margin: 6px auto 10px;
+  }
+  .star-row {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 6px;
+    margin-top: 6px;
+  }
+  .stars {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .star {
+    font-size: 26px;
+  }
+  .clear-mini {
+    margin-top: 6px;
+    align-self: flex-end;
+  }
+  .clear-wrap {
+    margin-top: 6px;
+  }
+  .scale-labels {
+    justify-items: end;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
