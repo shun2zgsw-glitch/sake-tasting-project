@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>出品酒一覧｜みんなで決めよう！ホントに美味しいお酒はこれだ！</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="日本酒試飲会『みんなで決めよう！ホントに美味しいお酒はこれだ！』の歴代出品酒一覧ページ。銘柄名・都道府県・品種などで並び替えできます。"
+    />
+    <!-- 既存の共通スタイル -->
+    <link rel="stylesheet" href="../styles/top.css" />
+    <!-- 出品酒一覧用の追加スタイル -->
+    <link rel="stylesheet" href="../styles/sake-list.css" />
+
+    <script>
+      // ★ さっき作った sake-master-api のURL
+      window.SAKE_MASTER_API_URL =
+        'https://script.google.com/macros/s/AKfycbxyhymnK7lR08UKkvtI-wYfQbIPBrRj6wNx-fX9t95z4U-wvKSvFiz3kI_SPVmjh-pUWA/exec';
+    </script>
+  </head>
+  <body>
+    <!-- =========================
+         Header（トップと同じ雰囲気）
+    ========================== -->
+    <header class="site-header">
+      <div class="l-container site-header__inner">
+        <a href="./index.html" class="site-header__logo">
+          <span class="site-header__logo-mark">
+            <img src="../images/logo.png" alt="サイトロゴ" />
+          </span>
+          <span>みんなで決めよう！ホントに美味しいお酒はこれだ！全国大会</span>
+        </a>
+
+        <nav class="site-header__nav" aria-label="メインナビゲーション">
+          <ul class="site-header__nav-list">
+            <li>
+              <a href="./index.html#latest" class="site-header__nav-link"
+                >最新回の結果</a
+              >
+            </li>
+            <li>
+              <a href="./index.html#vote" class="site-header__nav-link"
+                >投票ページ</a
+              >
+            </li>
+            <li>
+              <a href="./sake-list.html" class="site-header__nav-link is-active"
+                >出品酒一覧</a
+              >
+            </li>
+            <li>
+              <a href="./index.html#archive" class="site-header__nav-link"
+                >過去の結果</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="sake-list-page">
+      <section class="section">
+        <div class="l-container">
+          <header class="section__header">
+            <div class="section__label">Entry Sake</div>
+            <h1 class="section__title">出品酒一覧</h1>
+            <p class="section__description">
+              「sake-master」スプレッドシートから読み込んだ出品酒のカタログです。<br />
+              銘柄名・都道府県・品種ごとに並び替えて閲覧できます。
+            </p>
+          </header>
+
+          <!-- コントロールエリア -->
+          <div class="sake-controls" aria-label="並び替えと検索">
+            <div class="sake-controls__item">
+              <label for="sortKey">並び替え</label>
+              <select id="sortKey">
+                <option value="nameKana" selected>
+                  銘柄名（あいうえお順）
+                </option>
+                <option value="prefCode">都道府県（北海道 → 沖縄）</option>
+                <option value="typeSortOrder">
+                  品種（純米大吟醸 → その他）
+                </option>
+              </select>
+            </div>
+
+            <!-- 将来用：絞り込みや検索はここに追加 -->
+            <!--
+            <div class="sake-controls__item">
+              <label for="keyword">キーワード</label>
+              <input id="keyword" type="search" placeholder="銘柄名・酒造名など" />
+            </div>
+            -->
+          </div>
+
+          <!-- メッセージ -->
+          <p id="sake-status" class="sake-status" aria-live="polite">
+            読み込み中です…
+          </p>
+
+          <!-- 一覧 -->
+          <div id="sake-list" class="sake-list-grid" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="l-container">
+        <div class="site-footer__top">
+          <div>
+            <div class="site-footer__brand">
+              みんなで決めよう！本当に美味しいお酒はこれだ！
+            </div>
+            <div
+              style="font-size: 12px; color: var(--text-muted); margin-top: 4px"
+            >
+              半年に一度の日本酒試飲会。その記録と物語を残すためのポータルサイト。
+            </div>
+          </div>
+
+          <div class="site-footer__links">
+            <a href="#">運営者情報</a>
+            <a href="#">お問い合わせ</a>
+            <a href="#">利用規約</a>
+            <a href="#">プライバシーポリシー</a>
+          </div>
+        </div>
+
+        <div class="site-footer__bottom">
+          © 2025 みんなで決めよう！本当に美味しいお酒はこれだ！全国大会<br />
+          All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <script src="./sake-list.js" defer></script>
+  </body>
+</html>

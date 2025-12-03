@@ -1,0 +1,161 @@
+/* 出品酒一覧ページ用 */
+
+.sake-list-page {
+  background: var(--bg-soft);
+}
+
+.sake-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sake-controls__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.sake-controls select,
+.sake-controls input[type='search'] {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.sake-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.sake-list-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .sake-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sake-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  gap: 8px;
+}
+
+.sake-card__thumb-wrap {
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.sake-card__thumb {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.sake-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sake-card__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sake-card__meta-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #eef1ea;
+  color: var(--text-muted);
+}
+
+.pill.link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pill--type {
+  background: rgba(124, 179, 66, 0.15);
+  color: #2f5e1c;
+}
+
+.pill--pref {
+  background: rgba(25, 118, 210, 0.1);
+  color: #225a95;
+}
+
+.pill--round {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sake-card__desc {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.sake-card__more-btn {
+  margin-left: 4px;
+  border: none;
+  background: none;
+  color: var(--green-main);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sake-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-amazon {
+  background: #ff9900;
+  color: #fff;
+}
+
+.btn-rakuten {
+  background: #bf0000;
+  color: #fff;
+}
