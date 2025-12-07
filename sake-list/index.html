@@ -25,7 +25,7 @@
     ========================== -->
     <header class="site-header">
       <div class="l-container site-header__inner">
-        <a href="./index.html" class="site-header__logo">
+        <a href="../index.html" class="site-header__logo">
           <span class="site-header__logo-mark">
             <img src="../images/logo.png" alt="サイトロゴ" />
           </span>
@@ -65,10 +65,6 @@
           <header class="section__header">
             <div class="section__label">Entry Sake</div>
             <h1 class="section__title">出品酒一覧</h1>
-            <p class="section__description">
-              「sake-master」スプレッドシートから読み込んだ出品酒のカタログです。<br />
-              銘柄名・都道府県・品種ごとに並び替えて閲覧できます。
-            </p>
           </header>
 
           <!-- コントロールエリア -->
@@ -76,13 +72,10 @@
             <div class="sake-controls__item">
               <label for="sortKey">並び替え</label>
               <select id="sortKey">
-                <option value="nameKana" selected>
-                  銘柄名（あいうえお順）
-                </option>
-                <option value="prefCode">都道府県（北海道 → 沖縄）</option>
-                <option value="typeSortOrder">
-                  品種（純米大吟醸 → その他）
-                </option>
+                <option value="nameKana" selected>銘柄名</option>
+                <option value="brewery">酒蔵</option>
+                <option value="prefCode">都道府県</option>
+                <option value="typeSortOrder">品種</option>
               </select>
             </div>
 

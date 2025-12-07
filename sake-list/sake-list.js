@@ -49,6 +49,19 @@ function getSortedItems() {
         'ja'
       )
     );
+  } else if (sortKey === 'brewery') {
+    // ★ 追加ここ
+    items.sort((a, b) => {
+      const ab = String(a.breweryKana || a.brewery || '').trim();
+      const bb = String(b.breweryKana || b.brewery || '').trim();
+      const cmp = ab.localeCompare(bb, 'ja');
+      if (cmp !== 0) return cmp;
+      // 同じ酒蔵内では銘柄名でソート
+      return String(a.nameKana || a.name || '').localeCompare(
+        String(b.nameKana || b.name || ''),
+        'ja'
+      );
+    });
   } else if (sortKey === 'prefCode') {
     items.sort((a, b) => {
       const ac = Number(a.prefCode) || 0;
