@@ -12,6 +12,14 @@
     />
     <!-- 外部CSS -->
     <link rel="stylesheet" href="./styles/top.css" />
+
+    <script>
+      window.SAKE_MASTER_API_URL =
+        'https://script.google.com/macros/s/AKfycbxyhymnK7lR08UKkvtI-wYfQbIPBrRj6wNx-fX9t95z4U-wvKSvFiz3kI_SPVmjh-pUWA/exec';
+    </script>
+
+    <!-- ★ 追加：最新結果を描画するJS -->
+    <script src="./scripts/latest-result.js" defer></script>
   </head>
   <body>
     <!-- =========================
@@ -60,44 +68,26 @@
                 このサイトでは、最新回の結果・出品酒一覧・過去の順位までまとめてチェックできます。
               </p>
               <div class="hero__title-main">OFFICIAL TASTING EVENT</div>
-              <h1 class="hero__title">第9回 結果発表</h1>
+              <h1 class="hero__title">
+                第<span id="latest-round">9</span>回 結果発表
+              </h1>
             </header>
 
-            <div class="ranking-grid" aria-label="第9回 TOP3">
-              <article class="ranking-card">
-                <div class="ranking-card__medal ranking-card__medal--gold">
-                  1位
-                </div>
-                <div>
-                  <div class="ranking-card__title">〇〇 純米大吟醸</div>
-                  <div class="ranking-card__brewery">〇〇酒造（山形県）</div>
-                  <div class="ranking-card__meta">
-                    総合得点：〇〇点／参加者投票 第1位
-                  </div>
-                </div>
-              </article>
-
-              <article class="ranking-card">
-                <div class="ranking-card__medal ranking-card__medal--silver">
-                  2位
-                </div>
-                <div>
-                  <div class="ranking-card__title">△△ 特別純米</div>
-                  <div class="ranking-card__brewery">△△酒造（新潟県）</div>
-                  <div class="ranking-card__meta">総合得点：〇〇点</div>
-                </div>
-              </article>
-
-              <article class="ranking-card">
-                <div class="ranking-card__medal ranking-card__medal--bronze">
-                  3位
-                </div>
-                <div>
-                  <div class="ranking-card__title">□□ 吟醸</div>
-                  <div class="ranking-card__brewery">□□酒造（福島県）</div>
-                  <div class="ranking-card__meta">総合得点：〇〇点</div>
-                </div>
-              </article>
+            <div
+              id="latest-ranking"
+              class="ranking-grid"
+              aria-label="最新回 TOP3"
+            >
+              <p id="latest-status" class="latest-status">
+                最新の結果を読み込み中です…
+              </p>
+            </div>
+            <div class="ranking-sub">
+              <h2 class="ranking-sub__title">ボトルデザイン賞</h2>
+              <div
+                id="latest-design"
+                class="ranking-grid ranking-grid--design"
+              ></div>
             </div>
           </div>
         </div>
