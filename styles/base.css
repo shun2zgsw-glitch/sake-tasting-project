@@ -30,7 +30,13 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
     sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -248,6 +254,41 @@ select {
   font-size: 0.9rem;
   color: var(--primary);
   text-decoration: none;
+}
+
+/* スクロールしても動かない（固定ヘッダー） */
+.site-header {
+  position: sticky; /* 画面上部に張り付く */
+  top: 0;
+  z-index: 1000;
+}
+
+/* ロゴ + タイトルの横並び */
+.site-header__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.site-header__logo img {
+  display: block;
+  width: 80px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.site-header__title {
+  font-weight: 700;
+  font-size: 1.6rem; /* ← 好みで調整 */
+  line-height: 1.2;
 }
 
 /* ========================================
