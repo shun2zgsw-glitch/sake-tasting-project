@@ -36,7 +36,7 @@ function withTimeout(promise, ms = FETCH_TIMEOUT) {
   return Promise.race([
     promise(ctrl.signal),
     new Promise((_, rej) =>
-      setTimeout(() => rej(new Error('timeout')), ms + 10)
+      setTimeout(() => rej(new Error('timeout')), ms + 10),
     ),
   ]).finally(() => clearTimeout(t));
 }
@@ -185,9 +185,9 @@ function renderInputs() {
             it.brewery
               ? it.breweryUrl
                 ? `<a href="${esc(
-                    it.breweryUrl
+                    it.breweryUrl,
                   )}" class="pill link" target="_blank" rel="noopener noreferrer">${esc(
-                    it.brewery
+                    it.brewery,
                   )}</a>`
                 : `<span class="pill">${esc(it.brewery)}</span>`
               : ''
@@ -204,9 +204,9 @@ function renderInputs() {
               it.blur
                 ? `<span class="clear">${esc(it.desc || '').slice(
                     0,
-                    20
+                    20,
                   )}</span><span class="blurred">${esc(it.desc || '').slice(
-                    20
+                    20,
                   )}</span>`
                 : esc(it.desc || '')
             }
@@ -215,7 +215,7 @@ function renderInputs() {
 
         <div class="star-row" data-row="${key}">
           <div class="stars" role="radiogroup" aria-label="${esc(
-            it.name || ''
+            it.name || '',
           )} の評価（0〜10）"></div>
           <div class="scale-labels" aria-hidden="true">
             <span class="label-min">1</span>
@@ -306,8 +306,8 @@ function renderRanking({ items = [], updatedAt = '' } = {}) {
         li.innerHTML = `
           ${medal} <strong>${esc(it.name)}</strong>
           — 平均 <strong>${Number(it.avg).toFixed(2)}</strong> 点（${
-          it.count
-        }票）
+            it.count
+          }票）
         `;
         frag.appendChild(li);
       });
@@ -488,9 +488,9 @@ async function handleSend() {
       msgEl.textContent = '送信しました。最新の集計を反映します。';
       await fetchStats();
       // 成功後の後片付け
-      visualSelectedIndex = null;
-      updateVisualSelectionUI();
-      currentScoresReset();
+      // visualSelectedIndex = null;
+      // updateVisualSelectionUI();
+      // currentScoresReset();
     } else {
       const err = String(json?.error || text || '').toLowerCase();
       if (err.includes('voting closed')) {
