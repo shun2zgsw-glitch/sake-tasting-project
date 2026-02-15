@@ -5,6 +5,9 @@ const listEl = document.getElementById('sake-list');
 const statusEl = document.getElementById('sake-status');
 const sortSelectEl = document.getElementById('sortKey');
 
+const params = new URLSearchParams(location.search);
+const TARGET_ROUND = params.get('round');
+
 const esc = (s) =>
   String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -29,25 +32,45 @@ async function fetchSakeList() {
       return;
     }
 
+    if (TARGET_ROUND) {
+      document.title = `第${TARGET_ROUND}回 出品酒一覧｜みんなで決めよう！`;
+    }
+
     renderList();
-    statusEl.textContent = `${SAKE_ITEMS.length}件の出品酒が見つかりました。`;
+
+    if (TARGET_ROUND) {
+      const filteredCount = SAKE_ITEMS.filter(
+        (item) => String(item.round) === String(TARGET_ROUND),
+      ).length;
+
+      statusEl.textContent = `第${TARGET_ROUND}回の出品酒一覧（${filteredCount}件）`;
+    } else {
+      statusEl.textContent = `${SAKE_ITEMS.length}件の出品酒が見つかりました。`;
+    }
   } catch (e) {
     console.error(e);
     statusEl.textContent =
-      '出品酒リストの取得に失敗しました。時間をおいて再度お試しください。';
+      //'出品酒リストの取得に失敗しました。時間をおいて再度お試しください。';
+      '失敗: ' + (e && e.message ? e.message : String(e));
   }
 }
 
 function getSortedItems() {
   const sortKey = sortSelectEl.value;
-  const items = SAKE_ITEMS.slice(); // コピー
+  let items = SAKE_ITEMS.slice();
+
+  // ▼ ここを追加（絞り込み）
+  if (TARGET_ROUND) {
+    items = items.filter((item) => String(item.round) === String(TARGET_ROUND));
+  }
+  // ▲ ここまで追加
 
   if (sortKey === 'nameKana') {
     items.sort((a, b) =>
       String(a.nameKana || a.name || '').localeCompare(
         String(b.nameKana || b.name || ''),
-        'ja'
-      )
+        'ja',
+      ),
     );
   } else if (sortKey === 'brewery') {
     // ★ 追加ここ
@@ -59,7 +82,7 @@ function getSortedItems() {
       // 同じ酒蔵内では銘柄名でソート
       return String(a.nameKana || a.name || '').localeCompare(
         String(b.nameKana || b.name || ''),
-        'ja'
+        'ja',
       );
     });
   } else if (sortKey === 'prefCode') {
@@ -69,7 +92,7 @@ function getSortedItems() {
       if (ac !== bc) return ac - bc;
       return String(a.nameKana || '').localeCompare(
         String(b.nameKana || ''),
-        'ja'
+        'ja',
       );
     });
   } else if (sortKey === 'typeSortOrder') {
@@ -79,7 +102,7 @@ function getSortedItems() {
       if (at !== bt) return at - bt;
       return String(a.nameKana || '').localeCompare(
         String(b.nameKana || ''),
-        'ja'
+        'ja',
       );
     });
   }
@@ -117,8 +140,8 @@ function renderList() {
         imgSrc
           ? `<div class="sake-card__thumb-wrap">
                <img src="${esc(imgSrc)}" alt="${esc(
-              it.name || ''
-            )}" class="sake-card__thumb" loading="lazy" decoding="async">
+                 it.name || '',
+               )}" class="sake-card__thumb" loading="lazy" decoding="async">
              </div>`
           : ''
       }
@@ -130,9 +153,9 @@ function renderList() {
             it.brewery
               ? it.breweryUrl
                 ? `<a href="${esc(
-                    it.breweryUrl
+                    it.breweryUrl,
                   )}" class="pill link" target="_blank" rel="noopener noreferrer">${esc(
-                    it.brewery
+                    it.brewery,
                   )}</a>`
                 : `<span class="pill">${esc(it.brewery)}</span>`
               : ''
@@ -170,14 +193,14 @@ function renderList() {
                  ${
                    hasAmazon
                      ? `<a href="${esc(
-                         it.amazonUrl
+                         it.amazonUrl,
                        )}" class="btn-sm btn-amazon" target="_blank" rel="noopener noreferrer sponsored nofollow">Amazonで見る</a>`
                      : ''
                  }
                  ${
                    hasRakuten
                      ? `<a href="${esc(
-                         it.rakutenUrl
+                         it.rakutenUrl,
                        )}" class="btn-sm btn-rakuten" target="_blank" rel="noopener noreferrer sponsored nofollow">楽天で見る</a>`
                      : ''
                  }
