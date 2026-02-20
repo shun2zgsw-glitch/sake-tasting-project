@@ -486,7 +486,8 @@ async function handleSend() {
 
     if (ok && json?.ok) {
       msgEl.textContent = '送信しました。最新の集計を反映します。';
-      await fetchStats();
+      await new Promise((r) => requestAnimationFrame(r));
+      fetchStats().catch(console.error);
       // 成功後の後片付け
       // visualSelectedIndex = null;
       // updateVisualSelectionUI();
@@ -618,13 +619,30 @@ async function init() {
   setBusy(listEl, true);
   setBusy(rankingEl, true);
 
+  // まず即表示
+  msgEl.textContent = '読み込み中...';
+  listEl.innerHTML = `<div class="loading">銘柄を読み込み中...</div>`;
+  rankingEl.innerHTML = `<li>集計を読み込み中...</li>`;
+
   try {
-    await Promise.all([fetchSakeMaster(), populateMembers(), fetchStats()]);
-    syncNicknameSelects();
+    // 受付状態は軽いので先に（ボタン制御が早くなる）
+    loadVoteStatusAndApply().catch(() => {});
+
+    // stats と members は先に反映（体感改善）
+    populateMembers()
+      .then(() => {
+        syncNicknameSelects();
+        updateSendButtonState();
+      })
+      .catch(() => {});
+
+    fetchStats().catch(() => {});
+
+    // 銘柄が取れたら描画（ここがメイン）
+    await fetchSakeMaster();
     renderInputs();
     bindTopLevelEvents();
-    await loadVoteStatusAndApply(); // 受付状態を取得してUI反映
-    // 受付中のときのみ初期メッセージを消す（締切り表示は残す）
+
     if (VOTE_OPEN) msgEl.textContent = '';
   } catch (e) {
     console.error(e);
