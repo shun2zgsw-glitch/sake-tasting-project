@@ -13,6 +13,10 @@ const visualList = document.getElementById('visualList');
 const visualMeta = document.getElementById('visualMeta');
 const refreshVisualBtn = document.getElementById('refreshVisualBtn');
 
+const refreshCheckBtn = document.getElementById('refreshCheckBtn');
+const voteCheckBody = document.getElementById('voteCheckBody');
+const checkMeta = document.getElementById('checkMeta');
+
 // ============================
 // 状態/ユーティリティ
 // ============================
@@ -35,7 +39,7 @@ function withTimeout(promise, ms = FETCH_TIMEOUT) {
   return Promise.race([
     promise(ctrl.signal),
     new Promise((_, rej) =>
-      setTimeout(() => rej(new Error('timeout')), ms + 10)
+      setTimeout(() => rej(new Error('timeout')), ms + 10),
     ),
   ]).finally(() => clearTimeout(t));
 }
@@ -153,13 +157,16 @@ async function toggleVoteOpen() {
 // ============================
 // ランキング（平均点）
 // ============================
-async function loadStats() {
+async function loadStats(forceRefresh = false) {
   setBusy(rankList, true);
   rankList.innerHTML = '';
   rankMeta.textContent = '';
+
+  const refreshQS = forceRefresh ? '&refresh=1' : '';
+
   try {
     const { items = [], updatedAt = '' } = await withTimeout(async (signal) => {
-      const r = await fetch(`${window.GAS_API_URL}?type=stats`, {
+      const r = await fetch(`${window.GAS_API_URL}?type=stats${refreshQS}`, {
         signal,
         cache: 'no-store',
       });
@@ -171,15 +178,13 @@ async function loadStats() {
     rankMeta.textContent = updatedAt
       ? `最終更新：${new Date(updatedAt).toLocaleString()}`
       : '';
-    // 上位5位以外を折りたたみ
+
     applyCollapsible(
       rankList,
       5,
       statsExpanded,
-      (v) => {
-        statsExpanded = v;
-      },
-      'rankToggleWrap'
+      (v) => (statsExpanded = v),
+      'rankToggleWrap',
     );
   } catch (e) {
     rankList.innerHTML = `<li class="rank-item"><span class="rank-name">取得に失敗しました</span></li>`;
@@ -192,7 +197,8 @@ async function loadStats() {
 function renderRankList(items) {
   const arr = Array.isArray(items) ? [...items] : [];
   arr.sort(
-    (a, b) => (b?.avg ?? 0) - (a?.avg ?? 0) || (b?.count ?? 0) - (a?.count ?? 0)
+    (a, b) =>
+      (b?.avg ?? 0) - (a?.avg ?? 0) || (b?.count ?? 0) - (a?.count ?? 0),
   );
 
   const frag = document.createDocumentFragment();
@@ -212,11 +218,11 @@ function renderRankList(items) {
       <div class="rank-name-wrap">
         ${i === 0 ? `<div class="rank-crown" aria-hidden="true">👑</div>` : ``}
         <div class="rank-name" title="${esc(it.name || '')}">${esc(
-      it.name || `No.${i + 1}`
-    )}</div>
+          it.name || `No.${i + 1}`,
+        )}</div>
         <small class="rank-sub">${it.type ? `【${esc(it.type)}】` : ''}${
-      it.brewery ? `　${esc(it.brewery)}` : ''
-    }</small>
+          it.brewery ? `　${esc(it.brewery)}` : ''
+        }</small>
       </div>
       <div class="rank-score">
          <span class="avg">${Math.round(Number(it.avg ?? 0))}</span>
@@ -234,16 +240,22 @@ function renderRankList(items) {
 // ============================
 // ビジュアル投票（得票数）
 // ============================
-async function loadVisual() {
+async function loadVisual(forceRefresh = false) {
   setBusy(visualList, true);
   visualList.innerHTML = '';
   visualMeta.textContent = '';
+
+  const refreshQS = forceRefresh ? '&refresh=1' : '';
+
   try {
     const { items = [], updatedAt = '' } = await withTimeout(async (signal) => {
-      const r = await fetch(`${window.GAS_API_URL}?type=visual_stats`, {
-        signal,
-        cache: 'no-store',
-      });
+      const r = await fetch(
+        `${window.GAS_API_URL}?type=visual_stats${refreshQS}`,
+        {
+          signal,
+          cache: 'no-store',
+        },
+      );
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     });
@@ -252,15 +264,13 @@ async function loadVisual() {
     visualMeta.textContent = updatedAt
       ? `最終更新：${new Date(updatedAt).toLocaleString()}`
       : '';
-    // 上位5位以外を折りたたみ
+
     applyCollapsible(
       visualList,
       5,
       visualExpanded,
-      (v) => {
-        visualExpanded = v;
-      },
-      'visualToggleWrap'
+      (v) => (visualExpanded = v),
+      'visualToggleWrap',
     );
   } catch (e) {
     visualList.innerHTML = `<li class="rank-item"><span class="rank-name">取得に失敗しました</span></li>`;
@@ -270,12 +280,85 @@ async function loadVisual() {
   }
 }
 
+// ============================
+// 投票者集計
+// ============================
+async function loadVoteCheck() {
+  setBusy(voteCheckBody, true);
+  voteCheckBody.innerHTML = '';
+  checkMeta.textContent = '';
+
+  try {
+    const d = await withTimeout(async (signal) => {
+      const r = await fetch(`${window.GAS_API_URL}?type=vote_check`, {
+        signal,
+        cache: 'no-store',
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+
+    if (!d?.ok) throw new Error(d?.error || 'vote_check failed');
+
+    const members = Array.isArray(d.members) ? d.members : [];
+    const scoresSet = new Set(
+      (d.scoresNicknames || [])
+        .map((x) => String(x || '').trim())
+        .filter(Boolean),
+    );
+    const visualSet = new Set(
+      (d.visualNicknames || [])
+        .map((x) => String(x || '').trim())
+        .filter(Boolean),
+    );
+
+    let doneScores = 0;
+    let doneVisual = 0;
+
+    const frag = document.createDocumentFragment();
+
+    members.forEach((nameRaw) => {
+      const name = String(nameRaw || '').trim();
+      if (!name) return;
+
+      const hasScores = scoresSet.has(name);
+      const hasVisual = visualSet.has(name);
+      if (hasScores) doneScores++;
+      if (hasVisual) doneVisual++;
+
+      const tr = document.createElement('tr');
+      tr.className = hasScores && hasVisual ? 'check-ok' : 'check-ng';
+
+      tr.innerHTML = `
+        <td>${esc(name)}</td>
+        <td>${hasScores ? '〇' : ''}</td>
+        <td>${hasVisual ? '〇' : ''}</td>
+      `;
+      frag.appendChild(tr);
+    });
+
+    voteCheckBody.appendChild(frag);
+
+    const updatedAt = d.updatedAt
+      ? `最終更新：${new Date(d.updatedAt).toLocaleString()}`
+      : '';
+    checkMeta.textContent =
+      `参加者 ${members.length}名 / 合計点 ${doneScores}名 / ビジュアル ${doneVisual}名` +
+      (updatedAt ? `　｜　${updatedAt}` : '');
+  } catch (e) {
+    voteCheckBody.innerHTML = `<tr><td colspan="3">取得に失敗しました</td></tr>`;
+    console.error(e);
+  } finally {
+    setBusy(voteCheckBody, false);
+  }
+}
+
 function renderVisualList(items) {
   const arr = Array.isArray(items) ? [...items] : [];
   arr.sort(
     (a, b) =>
       (b?.votes ?? 0) - (a?.votes ?? 0) ||
-      String(a.name).localeCompare(String(b.name))
+      String(a.name).localeCompare(String(b.name)),
   );
 
   const frag = document.createDocumentFragment();
@@ -295,8 +378,8 @@ function renderVisualList(items) {
       <div class="rank-name-wrap">
         ${i === 0 ? `<div class="rank-crown" aria-hidden="true">👑</div>` : ``}
         <div class="rank-name" title="${esc(it.name || '')}">${esc(
-      it.name || `No.${i + 1}`
-    )}</div>
+          it.name || `No.${i + 1}`,
+        )}</div>
       </div>
       <div class="rank-score">
         <span class="avg">${Number(it.votes ?? 0)}</span>
@@ -315,16 +398,20 @@ function renderVisualList(items) {
 // 起動
 // ============================
 function bindEvents() {
-  refreshStatsBtn?.addEventListener('click', loadStats);
-  refreshVisualBtn?.addEventListener('click', loadVisual);
+  refreshStatsBtn?.addEventListener('click', () => loadStats(true));
+  refreshVisualBtn?.addEventListener('click', () => loadVisual(true));
+  refreshCheckBtn?.addEventListener('click', () => loadVoteCheck(true));
   toggleBtn?.addEventListener('click', toggleVoteOpen);
 }
 
 async function init() {
   bindEvents();
-  await loadVoteOpen();
-  await loadStats();
-  await loadVisual();
+
+  // 受付状態は即開始（待たない）
+  loadVoteOpen();
+
+  // 3つは並列で取得（最遅の1本だけ待つ）
+  await Promise.allSettled([loadStats(), loadVisual(), loadVoteCheck()]);
 }
 
 init();

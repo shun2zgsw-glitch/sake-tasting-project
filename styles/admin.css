@@ -159,3 +159,48 @@
 .list-toggle:hover {
   background: #f9fafb;
 }
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.check-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* ★列幅を安定させる */
+}
+
+.check-table th,
+.check-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.check-table th {
+  font-weight: 700;
+  white-space: normal; /* ← nowrap をやめる */
+  overflow-wrap: anywhere; /* ← 長い文字も折り返す */
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.check-table th:nth-child(1),
+.check-table td:nth-child(1) {
+  text-align: left; /* name列は左 */
+}
+
+.check-table th:nth-child(2),
+.check-table td:nth-child(2),
+.check-table th:nth-child(3),
+.check-table td:nth-child(3) {
+  text-align: center; /* 〇列は中央 */
+}
+
+.check-ok {
+  font-weight: 700;
+}
+.check-ng {
+  opacity: 0.55;
+}

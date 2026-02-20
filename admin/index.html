@@ -52,8 +52,35 @@
         <ol id="visualList" class="ranking"></ol>
         <p id="visualMeta" class="meta"></p>
       </section>
-    </main>
 
+      <!-- 投票完了チェック -->
+      <section class="card">
+        <div class="card-head">
+          <h2>投票完了チェック</h2>
+          <button id="refreshCheckBtn" class="btn">更新</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="check-table">
+            <colgroup>
+              <col style="width: 40%" />
+              <col style="width: 30%" />
+              <col style="width: 30%" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>name</th>
+                <th>合計点投票（scores）</th>
+                <th>ビジュアル投票（visual_votes）</th>
+              </tr>
+            </thead>
+            <tbody id="voteCheckBody"></tbody>
+          </table>
+        </div>
+
+        <p id="checkMeta" class="meta"></p>
+      </section>
+    </main>
     <footer class="site-footer">
       <div class="container"><small>© 日本酒試飲会</small></div>
     </footer>
